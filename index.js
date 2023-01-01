@@ -19,28 +19,47 @@ const client = new MongoClient(uri, {
 const run = async () => {
   try {
     const db = client.db("big-dashboard");
-    const productCollection = db.collection("products");
+    const userCollection = db.collection("users");
+    const jobCollection = db.collection("jobs");
     console.log("db is connected");
-    app.get("/products", async (req, res) => {
-      const cursor = productCollection.find({});
-      const product = await cursor.toArray();
+    app.post("/user", async (req, res) => {
+      const user = req.body;
 
-      res.send({ status: true, data: product });
-    });
-
-    app.post("/product", async (req, res) => {
-      const product = req.body;
-
-      const result = await productCollection.insertOne(product);
+      const result = await userCollection.insertOne(user);
 
       res.send(result);
     });
 
-    app.delete("/product/:id", async (req, res) => {
+    app.get("/user/:email", async (req, res) => {
+      const email = req.params.email;
+
+      const result = await userCollection.findOne({ email });
+
+      if (result?.email) {
+        return res.send({ status: true, data: result });
+      }
+
+      res.send({ status: false });
+    });
+
+    app.get("/jobs", async (req, res) => {
+      const cursor = jobCollection.find({});
+      const result = await cursor.toArray();
+      res.send({ status: true, data: result });
+    });
+    app.get("/job/:id", async (req, res) => {
       const id = req.params.id;
 
-      const result = await productCollection.deleteOne({ _id: ObjectId(id) });
-      res.send(result);
+      const result = await jobCollection.findOne({ _id: ObjectId(id) });
+      res.send({ status: true, data: result });
+    });
+
+    app.post("/job", async (req, res) => {
+      const job = req.body;
+
+      const result = await jobCollection.insertOne(job);
+
+      res.send({ status: true, data: result });
     });
   } finally {
   }
@@ -49,7 +68,7 @@ const run = async () => {
 run().catch((err) => console.log(err));
 
 app.get("/", (req, res) => {
-  res.send("Hello World!");
+  res.send("Hello Job-Box");
 });
 
 app.listen(port, () => {
