@@ -91,18 +91,17 @@ const run = async () => {
     app.patch("/reply", async (req, res) => {
       const userId = req.body.userId;
       const reply = req.body.reply;
+      const question = req.body.question;
       console.log(reply);
       console.log(userId);
-
       const filter = { "queries.id": ObjectId(userId) };
-
       const updateDoc = {
         $push: {
           "queries.$[user].reply": reply,
         },
       };
       const arrayFilter = {
-        arrayFilters: [{ "user.id": ObjectId(userId) }],
+        arrayFilters: [{ "user.question": question }],
       };
 
       const result = await jobCollection.updateOne(
